@@ -1,8 +1,9 @@
-# Welcome to my Ultimate Plex Stack!
+# Welcome to my Ultimate Plex Stack! (Modernized Fork)
 #
 # Make sure to rename this file to "docker-compose.yaml" if you are using git clone
 #
-# I was hoping this could maybe help some people out when setting up their stack
+# This is a modernized version of the original ultimate-plex-stack
+# Updated to use current tools and replace deprecated ones (2025/2026)
 #
 # Environment Variable Examples:
 # PUID = 99
@@ -23,7 +24,7 @@ networks: #This is used if you have a reverse proxy. I use Nginx Proxy Manager b
   proxy: #You can remove this block if you are not planning to use a vpn
     external:
       name: proxy
-      
+
 services:
   #Plex - used to display the media
   #
@@ -47,7 +48,7 @@ services:
       - ${MEDIA_SHARE}/media/tv:/tv
       - ${MEDIA_SHARE}/media/movies:/movies
     restart: unless-stopped
-    
+
   #Radarr - used to find movies automatically
   radarr:
     image: lscr.io/linuxserver/radarr:latest
@@ -59,12 +60,12 @@ services:
     volumes:
       - ${BASE_PATH}/radarr/config:/config
       - ${MEDIA_SHARE}:/share #Access to the entire share
-    #networks: #Does not connect to overseer if you use NPM
+    #networks: #Does not connect to seerr if you use NPM
     #  - proxy
     ports:
       - 7878:7878
     restart: unless-stopped
-    
+
   #Sonarr - used to find tv shows automatically
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
@@ -76,12 +77,12 @@ services:
     volumes:
       - ${BASE_PATH}/sonarr/config:/config
       - ${MEDIA_SHARE}:/share #Access to the entire share
-    #networks: #Does not connect to overseer if you use NPM
+    #networks: #Does not connect to seerr if you use NPM
     #  - proxy
     ports:
       - 8989:8989
     restart: unless-stopped
-  
+
   #Readarr - Used to download books
   readarr:
     image: lscr.io/linuxserver/readarr:develop
@@ -97,8 +98,8 @@ services:
     ports:
       - 8787:8787
     restart: unless-stopped
-    
-  #Lidarr - Used to download music 
+
+  #Lidarr - Used to download music
   lidarr:
     image: lscr.io/linuxserver/lidarr:latest
     container_name: lidarr
@@ -112,7 +113,7 @@ services:
     ports:
       - 8686:8686
     restart: unless-stopped
-    
+
   #Prowlarr - manages your Sonarr, Radarr and download client
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
@@ -128,7 +129,7 @@ services:
     ports:
       - 9696:9696
     restart: unless-stopped
-    
+
   #Autobrr - used to grab torrents using the trackers IRC channel - Increases seeding due to grabbing content before RSS feed
   autobrr:
     container_name: autobrr
@@ -143,37 +144,39 @@ services:
     ports:
       - 7474:7474
 
-  #Overseer - allows users to request media on their own
-  overseerr:
-    image: lscr.io/linuxserver/overseerr:latest
-    container_name: overseerr
+  #Seerr - allows users to request media on their own
+  #
+  #UPDATED: Replaces Overseerr. Seerr is the unified successor to Overseerr and Jellyseerr
+  #Supports Plex, Jellyfin, and Emby
+  #Migration guide: https://docs.seerr.dev/
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
     environment:
-      - PUID=${PUID}
-      - PGID=${GUID}
       - TZ=${TZ}
     volumes:
-      - ${BASE_PATH}/overseer/config:/config
-      - ${MEDIA_SHARE}:/share #Access to the entire share
+      - ${BASE_PATH}/seerr/config:/app/config
     #networks:
     #  - proxy
     ports:
       - 5055:5055
     restart: unless-stopped
-    
-  #Flaresolerr - Used as a proxy server to bypass Cloudflare and DDoS-GUARD protection.
-  flaresolverr:
-    # DockerHub mirror flaresolverr/flaresolverr:latest
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    container_name: flaresolverr
+
+  #Byparr - Used as a proxy server to bypass Cloudflare and DDoS-GUARD protection
+  #
+  #UPDATED: Replaces Flaresolverr. Byparr is a modern drop-in replacement using Camoufox
+  #Uses the same API as Flaresolverr, so no changes needed in Prowlarr config
+  #https://github.com/ThePhaseless/Byparr
+  byparr:
+    image: ghcr.io/thephaseless/byparr:latest
+    container_name: byparr
     environment:
       - LOG_LEVEL=info
-      - LOG_HTML=false
-      - CAPTCHA_SOLVER=none
       - TZ=${TZ}
     ports:
       - 8191:8191
     restart: unless-stopped
-      
+
   #Qbittorrent - torrenting software
   #
   #You can also use RuTorrent, Transmission or Deluge
@@ -190,7 +193,7 @@ services:
       - ${BASE_PATH}/qbittorrent/config:/config
       - ${MEDIA_SHARE}:/share
     restart: unless-stopped
-      
+
   #Tautulli - for plex statistics. Very useful when troubleshooting performance issues
   tautulli:
     image: lscr.io/linuxserver/tautulli:latest
@@ -210,6 +213,7 @@ services:
   #Tdarr - to transcode videos from one format to another like x265 or H.265
   #
   #This container requires a decent amount of horse power to run but will save space in the long run
+  #Alternative open-source option: Unmanic (https://github.com/Unmanic/unmanic)
   tdarr:
     container_name: tdarr
     image: ghcr.io/haveagitgat/tdarr:latest
@@ -237,12 +241,14 @@ services:
       - /transcode_cache:/temp
     devices:
      - /dev/dri:/dev/dri #Required for HW transcoding / QuickSync
-     
+
   #Membarr - to invite users via discord
   #
   #Can be configured so that when a plex member invites an outside user to a discord channel they are auto invited to plex
+  #Using Yoruio fork which is actively maintained
   #
   #Feel free to remove this container if you want to manually invite everyone yourself
+  #Consider using Wizarr instead if you don't need Discord integration
   membarr:
     container_name: membarr
     image: yoruio/membarr:latest
@@ -251,7 +257,7 @@ services:
       - token=${MEMBARR_TOKEN}
     volumes:
       - ${BASE_PATH}/membarr/config:/app/app/config
-      
+
   #Bazarr - for subtitles. Try to use SRT format if you can rather than PGS due to performance issues
   bazarr:
     container_name: bazarr
@@ -266,25 +272,29 @@ services:
       - ${MEDIA_SHARE}:/share
     ports:
       - 6767:6767
-      
-  #Plex Auto Languages - This switches languages automatically example: watching english show and non english speaks you get subtitle lol
+
+  #Plex Auto Languages - This switches languages automatically example: watching english show and non english speaks you get subtitle
+  #
+  #UPDATED: Using JourneyOver fork which is actively maintained
+  #Alternative: thesammykins TypeScript rewrite (https://github.com/thesammykins/plex-auto-languages)
   plexautolanguages:
-    image: remirigal/plex-auto-languages:latest
+    image: journeyover/plex-auto-languages:latest
     container_name: plex-auto-languages
     environment:
-      - PLEX_URL=${PLEX_URL} #This is your local URl example: http://192.168.1.10:32400
+      - PLEX_URL=${PLEX_URL} #This is your local URL example: http://192.168.1.10:32400
       #To find your plex token go to https://app.plex.tv/, go to your library, click on the 3 dots on the bottom right of one of your tv/movie posters
       #Then click "View XML" in the bottom right of that popup, look at the URL of the XML window and find your X-Plex-Token= in the URL (at the very end)
       - PLEX_TOKEN=${PLEX_TOKEN}
       - TZ=${TZ}
     volumes:
       - ${BASE_PATH}/pal/config:/config
-      
+    restart: unless-stopped
+
   #Cross Seed - used to take torrents from one tracker and seed them on another without leeching first. Increases ratio
   #
   #This is fairly advanced but can be removed if you don't think you will need it. Some trackers also don't allow this
   cross-seed:
-    image: ghcr.io/cross-seed/cross-seed
+    image: ghcr.io/cross-seed/cross-seed:6
     container_name: cross-seed
     environment:
       - PUID=${PUID}
@@ -297,23 +307,27 @@ services:
       - ${MEDIA_SHARE}/cross-seed/current-cross-seeds:/cross-seeds # A place to temp save current cross seed .torrent files
       #- ${MEDIA_SHARE}/downloads:/data # OPTIONAL!!! this is dataDir path (for data-based matching) - will need to replicate your torrent client's container path (like Arr's do)
     command: daemon # this enables the search mode, change to daemon to specifically run the daemon
-    
-  #Plex Meta Manager - used to create collections in plex. Example: "Most Popular Movies This Week", "Best of horror", etc.
-  plex-meta-manager:
-    image: meisnate12/plex-meta-manager
-    container_name: plex-meta-manager
+    restart: unless-stopped
+
+  #Kometa - used to create collections in plex. Example: "Most Popular Movies This Week", "Best of horror", etc.
+  #
+  #UPDATED: Replaces Plex Meta Manager which was deprecated in April 2024
+  #Migration guide: https://kometa.wiki/en/latest/kometa/guides/rebrand/
+  kometa:
+    image: kometateam/kometa:latest
+    container_name: kometa
     environment:
       - TZ=${TZ}
-      #- PMM_OVERLAYS_ONLY=true #Tells PMM to run overlays only
-      - PMM_CONFIG=/config/config.yml
-      - PMM_RUN=true #Runs PMM Immediately
-      #- PMM_RUN_LIBRARIES=Movies #Tells PMM to process only a library called "Movies"
+      #- KOMETA_OVERLAYS_ONLY=true #Tells Kometa to run overlays only
+      - KOMETA_CONFIG=/config/config.yml
+      - KOMETA_RUN=true #Runs Kometa Immediately
+      #- KOMETA_RUN_LIBRARIES=Movies #Tells Kometa to process only a library called "Movies"
     volumes:
-      - ${BASE_PATH}/plex-meta-manager/config:/config
-      
+      - ${BASE_PATH}/kometa/config:/config
     restart: unless-stopped
-    
+
   #Wizarr - Allows you to create a share link that you can send to users to invite them to your media server
+  #Supports Plex, Jellyfin, Emby, Audiobookshelf, Romm, Komga and Kavita
   wizarr:
     container_name: wizarr
     image: ghcr.io/wizarrrr/wizarr:latest
@@ -321,8 +335,10 @@ services:
       - 5690:5690
     volumes:
       - ${BASE_PATH}/wizarr/data/database:/data/database
-      
-  #Dozzle - Used to easily view logs of any container in real time!    
+    restart: unless-stopped
+
+  #Dozzle - Used to easily view logs of any container in real time!
+  #For historical logs/search, consider Loki + Grafana
   dozzle:
     container_name: dozzle
     image: amir20/dozzle:latest
@@ -330,21 +346,21 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - 9999:8080
-    
-  #Unpacker - Used to unzip zipped files
-  unpackerr:
-    image: golift/unpackerr
-    container_name: unpackerr
+    restart: unless-stopped
 
+  #Unpackerr - Used to unzip zipped files
+  unpackerr:
+    image: golift/unpackerr:latest
+    container_name: unpackerr
     volumes:
       # You need at least this one volume mapped so Unpackerr can find your files to extract.
       # Make sure this matches your Starr apps; the folder mount (/downloads or /data) should be identical.
       - ${MEDIA_SHARE}:/share
       #- ${BASE_PATH}/unpackerr/config:/config
-    restart: always
+    restart: unless-stopped
     user: 1000:1000 #Needs to run as 1000
     # What you see below are defaults for this compose. You only need to modify things specific to your environment.
-    # Remove apps and feature configs you do not use or need. 
+    # Remove apps and feature configs you do not use or need.
     # ie. Remove all lines that begin with UN_CMDHOOK, UN_WEBHOOK, UN_FOLDER, UN_WEBSERVER, and other apps you do not use.
     environment:
       - UN_START_DELAY=1m
@@ -364,14 +380,15 @@ services:
       - UN_RADARR_0_TIMEOUT=10s
       #- UN_RADARR_0_PATHS_0=/share/downloads/movies
 
-  # Used to sync Trash Guides config's to radarr and sonarr
+  # Recyclarr - Used to sync Trash Guides config's to radarr and sonarr
   # Only accessible via command line! No GUI
+  # Supports Radarr and Sonarr v4+
   recyclarr:
-    image: ghcr.io/recyclarr/recyclarr
+    image: ghcr.io/recyclarr/recyclarr:latest
     container_name: recyclarr
     user: ${PUID}:${GUID}
     volumes:
       - ${BASE_PATH}/recyclarr/config:/config
     environment:
       - TZ=${TZ}
- 
+    restart: unless-stopped

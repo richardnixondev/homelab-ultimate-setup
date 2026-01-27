@@ -1,10 +1,10 @@
-
-# Welcome to my Ultimate Plex Stack! (No vpn for qbit)
+# Welcome to my Ultimate Plex Stack! (Modernized Fork - Basic Version)
 #
-#Make sure to rename this to "docker-compose.yaml" if you are using git clone
-#This is the basic option giving you all the necessities for a basic plex / arr setup
+# Make sure to rename this to "docker-compose.yaml" if you are using git clone
+# This is the basic option giving you all the necessities for a basic plex / arr setup
 #
-# I was hoping this could maybe help some people out when setting up their stack
+# This is a modernized version of the original ultimate-plex-stack
+# Updated to use current tools and replace deprecated ones (2025/2026)
 #
 # Environment Variable Examples:
 # PUID = 99
@@ -43,7 +43,7 @@ services:
       - ${MEDIA_SHARE}/media/tv:/tv
       - ${MEDIA_SHARE}/media/movies:/movies
     restart: unless-stopped
-    
+
   #Radarr - used to find movies automatically
   radarr:
     image: lscr.io/linuxserver/radarr:latest
@@ -58,7 +58,7 @@ services:
     ports:
       - 7878:7878
     restart: unless-stopped
-    
+
   #Sonarr - used to find tv shows automatically
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
@@ -73,7 +73,7 @@ services:
     ports:
       - 8989:8989
     restart: unless-stopped
-  
+
   #Prowlarr - manages your Sonarr, Radarr and download client
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
@@ -88,21 +88,22 @@ services:
       - 9696:9696
     restart: unless-stopped
 
-  #Overseerr - allows users to request media on their own
-  overseerr:
-    image: lscr.io/linuxserver/overseerr:latest
-    container_name: overseerr
+  #Seerr - allows users to request media on their own
+  #
+  #UPDATED: Replaces Overseerr. Seerr is the unified successor to Overseerr and Jellyseerr
+  #Supports Plex, Jellyfin, and Emby
+  #Migration guide: https://docs.seerr.dev/
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
     environment:
-      - PUID=${PUID}
-      - PGID=${GUID}
       - TZ=${TZ}
     volumes:
-      - ${BASE_PATH}/overseerr/config:/config
-      - ${MEDIA_SHARE}:/share #Access to the entire share
+      - ${BASE_PATH}/seerr/config:/app/config
     ports:
       - 5055:5055
     restart: unless-stopped
-      
+
   #Qbittorrent - torrenting software
   #You can also use RuTorrent, Transmission or Deluge
   qbittorrent:
@@ -117,5 +118,7 @@ services:
     volumes:
       - ${BASE_PATH}/qbittorrent/config:/config
       - ${MEDIA_SHARE}:/share
+    ports:
+      - 8080:8080
+      - 8694:8694
     restart: unless-stopped
-      
