@@ -1,6 +1,6 @@
 # <img src="/ultimate_plex_stack_transparent_bg.png" width="300px" alt="The Ultimate Plex Stack"></img>
 
-> **Fork Notice:** Este repositório é um fork do [ultimate-plex-stack](https://github.com/DonMcD/ultimate-plex-stack) original. O objetivo deste fork é modernizar o stack, substituindo ferramentas deprecadas por alternativas atuais e mantendo as melhores práticas de 2025/2026.
+> **Fork Notice:** This repository is a fork of the original [ultimate-plex-stack](https://github.com/DonMcD/ultimate-plex-stack). The goal of this fork is to modernize the stack, replacing deprecated tools with current alternatives and maintaining best practices for 2025/2026.
 
 Welcome to my stack repository! This repository showcases my docker compose setup for managing various media-related services using Docker containers. The compose file is meant to be modified to each user's liking as I know, not everyone has the same requirements.
 
@@ -8,76 +8,77 @@ Currently you can choose from the **Basic** or the **Advanced** compose.
 
 ---
 
-## Análise de Ferramentas (2025/2026)
+## Tool Analysis (2025/2026)
 
-### Legenda de Status
+### Status Legend
 
-| Status | Significado |
-|--------|-------------|
-| :white_check_mark: | Ativo e recomendado |
-| :warning: | Funcional, mas com ressalvas |
-| :x: | Deprecado - substituir |
-| :arrows_counterclockwise: | Migração recomendada |
+| Status | Meaning |
+|--------|---------|
+| :white_check_mark: | Active and recommended |
+| :warning: | Functional, but with caveats |
+| :x: | Deprecated - replace |
+| :arrows_counterclockwise: | Migration recommended |
 
-### Análise Detalhada
+### Detailed Analysis
 
-| Ferramenta | Status | Análise | Recomendação |
-|------------|--------|---------|--------------|
-| **Plex** | :white_check_mark: | Continua sendo o media server mais polido e user-friendly. Suporte extensivo a dispositivos. Plex Pass opcional para recursos avançados. | Manter. Alternativas: [Jellyfin](https://jellyfin.org/) (open-source, gratuito) ou [Emby](https://emby.media/). |
-| **Radarr** | :white_check_mark: | Ativamente mantido. Parte do ecossistema Servarr. | Manter. |
-| **Sonarr** | :white_check_mark: | Ativamente mantido. Requer v4+. | Manter. |
-| **Prowlarr** | :white_check_mark: | Ativamente mantido. Suporta 500+ trackers torrent e 24+ indexers Usenet. | Manter. |
-| **Readarr** | :white_check_mark: | Branch `develop` ainda é necessário para algumas funcionalidades. | Manter. |
-| **Lidarr** | :white_check_mark: | Ativamente mantido para automação de música. | Manter. |
-| **qBittorrent** | :white_check_mark: | Ranked #1 entre clientes torrent. Suporta até 10.000 torrents. | Manter. Alternativas: [Transmission](https://transmissionbt.com/) (mais leve), [Deluge](https://deluge-torrent.org/) (mais customizável via plugins). |
-| **Overseerr** | :arrows_counterclockwise: | Sendo **deprecado** e fundido com Jellyseerr em um novo projeto chamado **Seerr**. | **Migrar para [Seerr](https://github.com/seerr-team/seerr)** - suporta Plex, Jellyfin e Emby. |
-| **Plex Meta Manager** | :x: | **DEPRECADO** em Abril 2024. Projeto renomeado para Kometa. LinuxServer.io não oferece mais suporte à imagem antiga. | **Substituir por [Kometa](https://github.com/Kometa-Team/Kometa)** (`kometateam/kometa`). |
-| **Tdarr** | :warning: | Funcional e poderoso para transcoding distribuído. Closed-source. | Manter. Alternativa open-source: [Unmanic](https://github.com/Unmanic/unmanic). |
-| **Tautulli** | :white_check_mark: | Continua sendo a melhor ferramenta de monitoramento para Plex. Alguns antivírus podem gerar falsos positivos. | Manter. |
-| **Bazarr** | :white_check_mark: | Ativamente mantido. Suporte a Python 3.13+. Integração com OpenSubtitles melhorada. | Manter. |
-| **Autobrr** | :white_check_mark: | Ativamente mantido (Go 1.25+). Melhor opção para IRC automation. | Manter. |
-| **Flaresolverr** | :arrows_counterclockwise: | Cloudflare atualiza constantemente suas proteções. FlareSolverr tem dificuldades em acompanhar. | **Considerar migrar para [Byparr](https://github.com/ThePhaseless/Byparr)** - drop-in replacement mais moderno usando Camoufox. |
-| **Membarr** | :warning: | Projeto original pode estar abandonado. Forks da comunidade (Yoruio/Membarr) continuam disponíveis. | Avaliar se Wizarr não atende melhor a necessidade. |
-| **Wizarr** | :white_check_mark: | Ativamente mantido (v2025.10.5+). Suporta Plex, Jellyfin, Emby, Audiobookshelf, Romm, Komga e Kavita. | Manter. |
-| **Dozzle** | :white_check_mark: | Leve e eficiente para logs em tempo real. Suporta Docker, Swarm, K8s, Podman. | Manter. Para logs históricos/search, considerar [Loki + Grafana](https://grafana.com/oss/loki/). |
-| **Plex Auto Languages** | :warning: | Projeto original (RemiRigal) pode ter sido abandonado. Forks da comunidade (JourneyDocker, thesammykins) continuam. Problemas reportados em TrueNAS Scale. | Usar fork ativo: `journeyover/plex-auto-languages` ou rewrite em TypeScript de thesammykins. |
-| **Cross-Seed** | :white_check_mark: | Ativamente mantido (v6). Suporta qBittorrent, rTorrent, Deluge, Transmission. | Manter. |
-| **Unpackerr** | :white_check_mark: | Ativamente mantido. Suporta RAR, ZIP, 7ZIP, TAR e mais. Auto-detecção de *arr apps. | Manter. |
-| **Recyclarr** | :white_check_mark: | Ativamente mantido. TRaSH Guides atualizados em Janeiro 2026. Suporta Radarr e Sonarr v4+. | Manter. |
+| Tool | Status | Analysis | Recommendation |
+|------|--------|----------|----------------|
+| **Plex** | :white_check_mark: | Remains the most polished and user-friendly media server. Extensive device support. Plex Pass optional for advanced features. | Keep. Alternatives: [Jellyfin](https://jellyfin.org/) (open-source, free) or [Emby](https://emby.media/). |
+| **Radarr** | :white_check_mark: | Actively maintained. Part of the Servarr ecosystem. | Keep. |
+| **Sonarr** | :white_check_mark: | Actively maintained. Requires v4+. | Keep. |
+| **Prowlarr** | :white_check_mark: | Actively maintained. Supports 500+ torrent trackers and 24+ Usenet indexers. | Keep. |
+| **Readarr** | :x: | LinuxServer.io image deprecated. No amd64 support available. | **Disabled** - waiting for upstream fix. |
+| **Lidarr** | :white_check_mark: | Actively maintained for music automation. | Keep. |
+| **qBittorrent** | :white_check_mark: | Ranked #1 among torrent clients. Supports up to 10,000 torrents. | Keep. Alternatives: [Transmission](https://transmissionbt.com/) (lighter), [Deluge](https://deluge-torrent.org/) (more customizable via plugins). |
+| **Overseerr** | :arrows_counterclockwise: | Being **deprecated** and merged with Jellyseerr into a new project called **Seerr**. | **Migrate to [Seerr](https://github.com/seerr-team/seerr)** - supports Plex, Jellyfin and Emby. |
+| **Plex Meta Manager** | :x: | **DEPRECATED** in April 2024. Project renamed to Kometa. LinuxServer.io no longer supports the old image. | **Replace with [Kometa](https://github.com/Kometa-Team/Kometa)** (`kometateam/kometa`). |
+| **Tdarr** | :warning: | Functional and powerful for distributed transcoding. Closed-source. | Keep. Open-source alternative: [Unmanic](https://github.com/Unmanic/unmanic). |
+| **Tautulli** | :white_check_mark: | Remains the best monitoring tool for Plex. Some antivirus may generate false positives. | Keep. |
+| **Bazarr** | :white_check_mark: | Actively maintained. Python 3.13+ support. Improved OpenSubtitles integration. | Keep. |
+| **Autobrr** | :white_check_mark: | Actively maintained (Go 1.25+). Best option for IRC automation. | Keep. |
+| **Flaresolverr** | :arrows_counterclockwise: | Cloudflare constantly updates its protections. FlareSolverr struggles to keep up. | **Consider migrating to [Byparr](https://github.com/ThePhaseless/Byparr)** - more modern drop-in replacement using Camoufox. |
+| **Wizarr** | :white_check_mark: | Actively maintained (v2025.10.5+). Supports Plex, Jellyfin, Emby, Audiobookshelf, Romm, Komga and Kavita. | Keep. |
+| **Dozzle** | :white_check_mark: | Lightweight and efficient for real-time logs. Supports Docker, Swarm, K8s, Podman. | Keep. For historical logs/search, consider [Loki + Grafana](https://grafana.com/oss/loki/). |
+| **Plex Auto Languages** | :warning: | Original project (RemiRigal) may have been abandoned. Community forks (JourneyDocker, thesammykins) continue. Issues reported on TrueNAS Scale. | Use active fork: `journeyover/plex-auto-languages` or TypeScript rewrite by thesammykins. |
+| **Unpackerr** | :white_check_mark: | Actively maintained. Supports RAR, ZIP, 7ZIP, TAR and more. Auto-detection of *arr apps. | Keep. |
+| **Recyclarr** | :white_check_mark: | Actively maintained. TRaSH Guides updated in January 2026. Supports Radarr and Sonarr v4+. | Keep. |
+| **Whisparr** | :white_check_mark: | Part of the Servarr ecosystem. Automated adult content management. Integrates with Prowlarr. | Keep. |
+| **Stash** | :white_check_mark: | Adult media organizer with metadata scraping, tagging, web streaming. | Keep. |
+| **Homepage** | :white_check_mark: | Modern, highly customizable dashboard. Supports widgets for all *arr apps. | Keep. |
 
 ---
 
-## Mudanças Prioritárias para Modernização
+## Priority Changes for Modernization
 
-### :x: Substituições Obrigatórias
+### :x: Mandatory Replacements
 
 1. **Plex Meta Manager → Kometa**
    ```yaml
-   # Antes (deprecado)
+   # Before (deprecated)
    plex-meta-manager:
      image: meisnate12/plex-meta-manager
 
-   # Depois
+   # After
    kometa:
      image: kometateam/kometa
    ```
 
 2. **Overseerr → Seerr**
    ```yaml
-   # Antes (será deprecado)
+   # Before (will be deprecated)
    overseerr:
      image: lscr.io/linuxserver/overseerr:latest
 
-   # Depois
+   # After
    seerr:
-     image: ghcr.io/seerr-team/seerr:latest
+     image: ghcr.io/seerr-team/seerr:develop
    ```
 
-### :arrows_counterclockwise: Migrações Recomendadas
+### :arrows_counterclockwise: Recommended Migrations
 
-3. **Flaresolverr → Byparr** (se enfrentando problemas com Cloudflare)
+3. **Flaresolverr → Byparr** (if facing Cloudflare issues)
    ```yaml
-   # Alternativa mais moderna
+   # More modern alternative
    byparr:
      image: ghcr.io/thephaseless/byparr:latest
    ```
@@ -92,8 +93,8 @@ Currently you can choose from the **Basic** or the **Advanced** compose.
 - **Radarr:** Movie management and automation.
 - **Sonarr:** TV show management and automation.
 - **Prowlarr:** Indexer manager for Radarr and Sonarr.
-- **Overseerr:** Request management and monitoring for Plex.
-- **Qbittorrent:** BitTorrent client with VPN support.
+- **Seerr:** Request management and monitoring for Plex/Jellyfin/Emby.
+- **qBittorrent:** BitTorrent client.
 
 **Advanced Compose** Includes:
 
@@ -101,22 +102,25 @@ Currently you can choose from the **Basic** or the **Advanced** compose.
 - **Radarr:** Movie management and automation.
 - **Sonarr:** TV show management and automation.
 - **Prowlarr:** Indexer manager for Radarr and Sonarr.
-- **Overseerr:** Request management and monitoring for Plex.
-- **Qbittorrent:** BitTorrent client with VPN support.
-- **Tdarr:** Pre-transcodes your media to decrease file sizes
-- **Membarr:** Invite users to your Plex via discord
+- **Seerr:** Request management for Plex/Jellyfin/Emby.
+- **qBittorrent:** BitTorrent client.
+- **Tdarr:** Pre-transcodes your media to decrease file sizes.
 - **Tautulli:** Analytics and monitoring for Plex.
 - **Bazarr:** Subtitle management for movies and TV shows.
 - **Autobrr:** Used to grab torrents immediately as they are released.
-- **Readarr:** Used to grab books and audiobooks.
 - **Lidarr:** Used to grab music.
-- **Flaresolverr:** Used as a proxy server to bypass Cloudflare and DDoS-GUARD protection.
+- **Byparr:** Used as a proxy server to bypass Cloudflare and DDoS-GUARD protection.
 - **Dozzle:** Used to view the logs of any container.
 - **Wizarr:** Used to create links that can be sent to users so they can be invited to your media server.
 - **Kometa:** Used to create collections, overlays, playlists and much more! *(Formerly Plex Meta Manager)*
-- **Plex Auto Languages:** Used to auto update the language of your Plex TV episodes
-- **Recyclarr:** Used to sync the config of trash guides with your arr stack
+- **Plex Auto Languages:** Used to auto update the language of your Plex TV episodes.
+- **Recyclarr:** Used to sync the config of TRaSH Guides with your *arr stack.
+- **Unpackerr:** Used to extract archived downloads automatically.
+- **Whisparr:** Automated adult content management (part of the Servarr family).
+- **Stash:** Adult media organizer with metadata scraping, tagging, and web-based streaming.
+- **Homepage:** Modern dashboard to access all your services in one place.
 
+---
 
 ## Dependencies
 
@@ -126,54 +130,104 @@ Currently you can choose from the **Basic** or the **Advanced** compose.
 
 ## How to Use
 
-1. Clone this repository / Copy the docker-compose.yml file:
-
-   ```
+1. Clone this repository:
+   ```bash
    git clone https://github.com/richardnixondev/homelab-ultimate-setup.git
+   cd homelab-ultimate-setup
    ```
-2. Rename the advanced-compose or basic-compose to docker-compose.yml
-3. Fill in the required environment variables
-5. Then enter the command ``` docker compose up -d ```
-6. OPTIONAL: Setup a reverse proxy so you can use radarr.my-domain.com instead of 192.168..... to access each of your apps
 
-## Example of Environment variables in Portainer
-Keep in mind some variable names have changed since this screenshot was taken
-<img width="657" alt="image" src="https://github.com/DonMcD/ultimate-plex-stack/assets/90471623/9a614eb0-8ff7-4eb9-b154-61c08cd595e9">
+2. Create your `.env` file with required variables:
+   ```bash
+   cp .env.example .env
+   nano .env
+   ```
 
+3. Rename the compose file:
+   ```bash
+   # For basic setup
+   cp basic-compose.yaml docker-compose.yml
 
-File location examples:
-- {MEDIA_SHARE} = /share
-- {BASE_PATH} = /home/username/docker
+   # For advanced setup
+   cp advanced-compose.yml docker-compose.yml
+   ```
 
-To allow hardlinking to work (which you will definitely want!) you will have to use the same root folder in all of your container path. In this example we use "/share", so in the container it will look like "/share/downloads/tv"
+4. Start the stack:
+   ```bash
+   docker compose up -d
+   ```
 
-An example of my folder structure:
-![image](https://github.com/DonMcD/ultimate-plex-stack/assets/90471623/2003ac26-a929-4ff6-ad67-e35fc51fb51a)
+5. OPTIONAL: Setup a reverse proxy so you can use `radarr.my-domain.com` instead of IP addresses.
 
-- Feel free to expand your folders to also include "books" or "music" as you need for your setup
+## Environment Variables
 
+Required variables for the `.env` file:
 
+| Variable | Example | Description |
+|----------|---------|-------------|
+| `PUID` | `1000` | User ID for container permissions |
+| `GUID` | `1000` | Group ID for container permissions |
+| `TZ` | `Europe/Dublin` | Timezone |
+| `BASE_PATH` | `/mnt/truenas/config` | Config directory for all services |
+| `DOCKER_PATH` | `/mnt/truenas/docker` | Persistent volumes directory |
+| `MEDIA_SHARE` | `/mnt/truenas` | Root media storage path |
+| `PLEX_CLAIM` | *(from plex.tv/claim)* | Plex server claim token |
+| `PLEX_URL` | `http://IP:32400` | Local Plex URL |
+| `PLEX_TOKEN` | *(your token)* | Plex authentication token |
+| `SERVER_IP` | `10.10.11.201` | Server IP address |
 
-1. In Radarr you will want to set your category to "movies", this will create the movies folder
-2. In Sonarr you will want to set your category to "tv", this will create the tv folder
+## Folder Structure
 
+To allow hardlinking to work (which you will definitely want!) you will have to use the same root folder in all of your container paths.
 
-Anytime you reference your media folder in a container you want the path to look like /share/media/tv instead of /tv like a lot of the default guides say, if you do end up mapping the path as /tv hardlinking will not work
+```
+/mnt/truenas/           # MEDIA_SHARE
+├── config/             # BASE_PATH - container configs
+├── docker/             # DOCKER_PATH - persistent volumes
+├── downloads/          # Torrent/Usenet downloads
+├── movies/             # Movie library
+├── tv/                 # TV shows library
+├── music/              # Music library
+└── xxx/                # Adult content library
+```
 
-## Possible Additions
+### Important Notes:
 
-1. Organizr - Creates a lovely dashboard to help navigate to all of your apps
-2. Portainer - Docker GUI
-3. UptimeKuma - Gives you the ability to monitor your services
-4. [Homarr](https://homarr.dev/) - Modern dashboard alternative to Organizr
-5. [Homepage](https://gethomepage.dev/) - Another modern dashboard option
+- In Radarr, set your category to "movies" - this will create the movies folder
+- In Sonarr, set your category to "tv" - this will create the tv folder
+- Always reference media folders as `/share/media/tv` instead of `/tv` for hardlinking to work
+
+## Service Ports
+
+| Service | Port | URL |
+|---------|------|-----|
+| Homepage | 3000 | http://IP:3000 |
+| Plex | 32400 | http://IP:32400/web |
+| Radarr | 7878 | http://IP:7878 |
+| Sonarr | 8989 | http://IP:8989 |
+| Prowlarr | 9696 | http://IP:9696 |
+| Lidarr | 8686 | http://IP:8686 |
+| Whisparr | 6969 | http://IP:6969 |
+| Stash | 9998 | http://IP:9998 |
+| qBittorrent | 8080 | http://IP:8080 |
+| Seerr | 5055 | http://IP:5055 |
+| Tautulli | 8181 | http://IP:8181 |
+| Bazarr | 6767 | http://IP:6767 |
+| Tdarr | 8265 | http://IP:8265 |
+| Autobrr | 7474 | http://IP:7474 |
+| Wizarr | 5690 | http://IP:5690 |
+| Dozzle | 9999 | http://IP:9999 |
+| Byparr | 8191 | http://IP:8191 |
 
 ---
 
-## Fontes e Referências
+## Sources and References
 
-- [TRaSH Guides](https://trash-guides.info/) - Guias de qualidade e configuração
-- [Servarr Wiki](https://wiki.servarr.com/) - Documentação oficial dos *arr apps
-- [LinuxServer.io](https://www.linuxserver.io/) - Imagens Docker confiáveis
-- [Kometa Wiki](https://kometa.wiki/) - Documentação do Kometa (ex-PMM)
-- [Seerr Documentation](https://docs.seerr.dev/) - Documentação do Seerr
+- [TRaSH Guides](https://trash-guides.info/) - Quality profiles and configuration guides
+- [Servarr Wiki](https://wiki.servarr.com/) - Official *arr apps documentation
+- [LinuxServer.io](https://www.linuxserver.io/) - Reliable Docker images
+- [Kometa Wiki](https://kometa.wiki/) - Kometa documentation (formerly PMM)
+- [Seerr Documentation](https://docs.seerr.dev/) - Seerr documentation
+- [Whisparr Wiki](https://wiki.servarr.com/whisparr) - Whisparr documentation
+- [Stash](https://stashapp.cc/) - Stash documentation
+- [Homepage](https://gethomepage.dev/) - Homepage dashboard documentation
+- [Hardlinks and Instant Moves](https://trash-guides.info/Hardlinks/Hardlinks-and-Instant-Moves/) - Storage architecture guide

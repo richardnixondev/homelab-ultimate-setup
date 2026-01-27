@@ -84,20 +84,22 @@ services:
     restart: unless-stopped
 
   #Readarr - Used to download books
-  readarr:
-    image: lscr.io/linuxserver/readarr:develop
-    container_name: readarr
-    environment:
-      - PUID=${PUID}
-      - PGID=${GUID}
-      - TZ=${TZ}
-    volumes:
-      - ${BASE_PATH}/readarr/config:/config
-      - ${MEDIA_SHARE}:/share
-
-    ports:
-      - 8787:8787
-    restart: unless-stopped
+  #
+  #NOTE: DISABLED - LinuxServer image deprecated and no amd64 support available
+  #TODO: Find alternative or wait for upstream fix
+  #readarr:
+  #  image: linuxserver/readarr:develop
+  #  container_name: readarr
+  #  environment:
+  #    - PUID=${PUID}
+  #    - PGID=${GUID}
+  #    - TZ=${TZ}
+  #  volumes:
+  #    - ${BASE_PATH}/readarr/config:/config
+  #    - ${MEDIA_SHARE}:/share
+  #  ports:
+  #    - 8787:8787
+  #  restart: unless-stopped
 
   #Lidarr - Used to download music
   lidarr:
@@ -148,9 +150,10 @@ services:
   #
   #UPDATED: Replaces Overseerr. Seerr is the unified successor to Overseerr and Jellyseerr
   #Supports Plex, Jellyfin, and Emby
+  #Note: Using develop tag until stable release is available
   #Migration guide: https://docs.seerr.dev/
   seerr:
-    image: ghcr.io/seerr-team/seerr:latest
+    image: ghcr.io/seerr-team/seerr:develop
     container_name: seerr
     environment:
       - TZ=${TZ}
@@ -244,19 +247,15 @@ services:
 
   #Membarr - to invite users via discord
   #
-  #Can be configured so that when a plex member invites an outside user to a discord channel they are auto invited to plex
-  #Using Yoruio fork which is actively maintained
-  #
-  #Feel free to remove this container if you want to manually invite everyone yourself
-  #Consider using Wizarr instead if you don't need Discord integration
-  membarr:
-    container_name: membarr
-    image: yoruio/membarr:latest
-    restart: unless-stopped
-    environment:
-      - token=${MEMBARR_TOKEN}
-    volumes:
-      - ${BASE_PATH}/membarr/config:/app/app/config
+  #DISABLED - Using Wizarr instead
+  #membarr:
+  #  container_name: membarr
+  #  image: yoruio/membarr:latest
+  #  restart: unless-stopped
+  #  environment:
+  #    - token=${MEMBARR_TOKEN}
+  #  volumes:
+  #    - ${BASE_PATH}/membarr/config:/app/app/config
 
   #Bazarr - for subtitles. Try to use SRT format if you can rather than PGS due to performance issues
   bazarr:
@@ -292,22 +291,21 @@ services:
 
   #Cross Seed - used to take torrents from one tracker and seed them on another without leeching first. Increases ratio
   #
-  #This is fairly advanced but can be removed if you don't think you will need it. Some trackers also don't allow this
-  cross-seed:
-    image: ghcr.io/cross-seed/cross-seed:6
-    container_name: cross-seed
-    environment:
-      - PUID=${PUID}
-      - PGID=${GUID}
-    ports:
-      - "2468:2468" # you'll need this for daemon mode only
-    volumes:
-      - ${BASE_PATH}/cross-seed/config:/config #To configure you have to manually nano the config file
-      - ${BASE_PATH}/qbittorrent/config/qBittorrent/BT_backup:/torrents:ro # your torrent clients .torrent cache, can and should be mounted read-only (e.g. qbit: `BT_Backup` | deluge: `state` | transmission: `transmission/torrents` | rtorrent: session dir from `.rtorrent.rc`)
-      - ${MEDIA_SHARE}/cross-seed/current-cross-seeds:/cross-seeds # A place to temp save current cross seed .torrent files
-      #- ${MEDIA_SHARE}/downloads:/data # OPTIONAL!!! this is dataDir path (for data-based matching) - will need to replicate your torrent client's container path (like Arr's do)
-    command: daemon # this enables the search mode, change to daemon to specifically run the daemon
-    restart: unless-stopped
+  #DISABLED - Requires advanced configuration
+  #cross-seed:
+  #  image: ghcr.io/cross-seed/cross-seed:6
+  #  container_name: cross-seed
+  #  environment:
+  #    - PUID=${PUID}
+  #    - PGID=${GUID}
+  #  ports:
+  #    - "2468:2468"
+  #  volumes:
+  #    - ${BASE_PATH}/cross-seed/config:/config
+  #    - ${BASE_PATH}/qbittorrent/config/qBittorrent/BT_backup:/torrents:ro
+  #    - ${MEDIA_SHARE}/cross-seed/current-cross-seeds:/cross-seeds
+  #  command: daemon
+  #  restart: unless-stopped
 
   #Kometa - used to create collections in plex. Example: "Most Popular Movies This Week", "Best of horror", etc.
   #
@@ -391,4 +389,77 @@ services:
       - ${BASE_PATH}/recyclarr/config:/config
     environment:
       - TZ=${TZ}
+    restart: unless-stopped
+
+  # ============================================
+  # DASHBOARD
+  # ============================================
+
+  #Homepage - Modern dashboard for all your services
+  #
+  #https://gethomepage.dev/
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    environment:
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=${TZ}
+      - HOMEPAGE_ALLOWED_HOSTS=10.10.11.201:3000,localhost:3000,homelab:3000
+    volumes:
+      - ${BASE_PATH}/homepage/config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/truenas/movies:/mnt/truenas/movies:ro
+      - /mnt/truenas/config:/mnt/truenas/config:ro
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+
+  # ============================================
+  # ADULT CONTENT MANAGEMENT
+  # ============================================
+
+  #Whisparr - Automated adult content management (part of the Servarr family)
+  #
+  #Works like Radarr/Sonarr but for adult content
+  #Integrates with Prowlarr for indexers
+  #https://wiki.servarr.com/whisparr
+  whisparr:
+    image: ghcr.io/hotio/whisparr:latest
+    container_name: whisparr
+    environment:
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=${TZ}
+    volumes:
+      - ${BASE_PATH}/whisparr/config:/config
+      - ${MEDIA_SHARE}:/share  # Full share access for hardlinking (downloads + xxx)
+    ports:
+      - 6969:6969
+    restart: unless-stopped
+
+  #Stash - Adult media organizer with metadata scraping
+  #
+  #Features: metadata scraping, scene detection, performer identification,
+  #tagging system, duplicate detection, web-based streaming
+  #https://stashapp.cc/
+  stash:
+    image: stashapp/stash:latest
+    container_name: stash
+    environment:
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=${TZ}
+      - STASH_STASH=/data/
+      - STASH_GENERATED=/generated/
+      - STASH_METADATA=/metadata/
+      - STASH_CACHE=/cache/
+    volumes:
+      - ${BASE_PATH}/stash/config:/root/.stash
+      - ${DOCKER_PATH}/stash/generated:/generated
+      - ${DOCKER_PATH}/stash/metadata:/metadata
+      - ${DOCKER_PATH}/stash/cache:/cache
+      - ${MEDIA_SHARE}/xxx:/data  # Adult content library
+    ports:
+      - 9998:9999
     restart: unless-stopped
