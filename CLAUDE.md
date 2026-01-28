@@ -120,6 +120,7 @@ Backrest (restic web UI) backs up all service configs to TrueNAS:
 
 - **Source 1:** `/mnt/truenas/config/` — all NFS-hosted service configs (`/sources/truenas-config` inside container)
 - **Source 2:** `/opt/docker-configs/` — local SQLite DBs for *arr apps, Stash (`/sources/local-configs` inside container)
+- **Source 3:** `/mnt/truenas/docker/` — persistent generated data: Stash screenshots/previews, etc. (`/sources/docker-persistent` inside container)
 - **Destination:** `/mnt/truenas/backup-appdata/` — 2TB backup pool on TrueNAS (`/repos/truenas-backups` inside container)
 - **Schedule:** Daily at 2 AM, prune weekly
 - **Retention:** 7 daily, 4 weekly, 6 monthly

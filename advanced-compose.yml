@@ -1000,6 +1000,7 @@ services:
       - ${BASE_PATH}/backrest/cache:/cache
       - /mnt/truenas/config:/sources/truenas-config:ro
       - /opt/docker-configs:/sources/local-configs:ro
+      - ${DOCKER_PATH}:/sources/docker-persistent:ro
       - /mnt/truenas/backup-appdata:/repos/truenas-backups
     networks:
       - proxy
