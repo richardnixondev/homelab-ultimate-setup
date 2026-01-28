@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "docker:enableMajor"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["docker-compose"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": false,
+      "labels": ["docker-update"]
+    },
+    {
+      "matchManagers": ["docker-compose"],
+      "matchUpdateTypes": ["major"],
+      "labels": ["docker-update", "breaking"]
+    },
+    {
+      "matchPackageNames": ["authelia/authelia"],
+      "allowedVersions": "<4.38",
+      "description": "Pinned below 4.38 - requires HTTPS for session cookies (no TLS in this homelab)"
+    }
+  ],
+  "schedule": ["before 8am on Monday"]
+}

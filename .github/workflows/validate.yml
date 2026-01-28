@@ -1,0 +1,70 @@
+name: Validate Stack
+
+on:
+  push:
+    paths:
+      - '*.yml'
+      - '*.yaml'
+      - '.github/workflows/**'
+  pull_request:
+    paths:
+      - '*.yml'
+      - '*.yaml'
+      - '.github/workflows/**'
+
+jobs:
+  validate-compose:
+    name: Validate Docker Compose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create minimal .env for validation
+        run: |
+          cat > .env << 'EOF'
+          PUID=1000
+          GUID=1000
+          TZ=Europe/Dublin
+          BASE_PATH=/tmp/config
+          DOCKER_PATH=/tmp/docker
+          MEDIA_SHARE=/tmp/media
+          PLEX_CLAIM=claim-xxxx
+          SERVER_IP=10.10.11.201
+          PLEX_URL=http://10.10.11.201:32400
+          PLEX_TOKEN=xxxx
+          SONARR_KEY=xxxx
+          RADARR_KEY=xxxx
+          VPN_SERVICE_PROVIDER=surfshark
+          VPN_TYPE=wireguard
+          WIREGUARD_PRIVATE_KEY=xxxx
+          WIREGUARD_ADDRESSES=10.14.0.2/16
+          AUTHELIA_JWT_SECRET=xxxx
+          AUTHELIA_SESSION_SECRET=xxxx
+          AUTHELIA_STORAGE_ENCRYPTION_KEY=xxxx
+          EOF
+
+      - name: Validate advanced-compose.yml
+        run: docker compose -f advanced-compose.yml config --quiet
+
+      - name: Validate basic-compose.yaml
+        run: |
+          if [ -f basic-compose.yaml ]; then
+            docker compose -f basic-compose.yaml config --quiet
+          else
+            echo "basic-compose.yaml not found, skipping"
+          fi
+
+  lint-yaml:
+    name: Lint YAML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint YAML files
+        run: |
+          yamllint -d "{extends: relaxed, rules: {line-length: {max: 200}, truthy: disable, comments-indentation: disable}}" \
+            advanced-compose.yml \
+            $(find . -name '*.yaml' -not -path './.github/*' 2>/dev/null)
