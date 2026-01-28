@@ -946,5 +946,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.actual.rule=Host(`orcamento.homelab`)"
+      - "traefik.http.routers.actual.entrypoints=websecure"
+      - "traefik.http.routers.actual.tls=true"
       - "traefik.http.services.actual.loadbalancer.server.port=5006"
     restart: unless-stopped
