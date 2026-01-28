@@ -51,7 +51,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.adguard.rule=Host(`dns.homelab`)"
-      - "traefik.http.services.adguard.loadbalancer.server.port=3000"
+      - "traefik.http.routers.adguard.entrypoints=websecure"
+      - "traefik.http.routers.adguard.tls=true"
+      - "traefik.http.services.adguard.loadbalancer.server.port=80"
     restart: unless-stopped
 
   # ============================================
@@ -67,6 +69,8 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
       - "--providers.file.filename=/etc/traefik/dynamic.yml"
     ports:
@@ -123,6 +127,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.radarr.rule=Host(`radarr.homelab`)"
+      - "traefik.http.routers.radarr.entrypoints=websecure"
+      - "traefik.http.routers.radarr.tls=true"
       - "traefik.http.services.radarr.loadbalancer.server.port=7878"
     restart: unless-stopped
 
@@ -144,6 +150,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.homelab`)"
+      - "traefik.http.routers.sonarr.entrypoints=websecure"
+      - "traefik.http.routers.sonarr.tls=true"
       - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
     restart: unless-stopped
 
@@ -183,6 +191,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.lidarr.rule=Host(`lidarr.homelab`)"
+      - "traefik.http.routers.lidarr.entrypoints=websecure"
+      - "traefik.http.routers.lidarr.tls=true"
       - "traefik.http.services.lidarr.loadbalancer.server.port=8686"
     restart: unless-stopped
 
@@ -203,6 +213,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.homelab`)"
+      - "traefik.http.routers.prowlarr.entrypoints=websecure"
+      - "traefik.http.routers.prowlarr.tls=true"
       - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
     restart: unless-stopped
 
@@ -241,6 +253,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.seerr.rule=Host(`pedirfilmes.homelab`)"
+      - "traefik.http.routers.seerr.entrypoints=websecure"
+      - "traefik.http.routers.seerr.tls=true"
       - "traefik.http.services.seerr.loadbalancer.server.port=5055"
     restart: unless-stopped
 
@@ -298,6 +312,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.tautulli.rule=Host(`tautulli.homelab`)"
+      - "traefik.http.routers.tautulli.entrypoints=websecure"
+      - "traefik.http.routers.tautulli.tls=true"
       - "traefik.http.services.tautulli.loadbalancer.server.port=8181"
     restart: unless-stopped
 
@@ -364,6 +380,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.bazarr.rule=Host(`legendas.homelab`)"
+      - "traefik.http.routers.bazarr.entrypoints=websecure"
+      - "traefik.http.routers.bazarr.tls=true"
       - "traefik.http.services.bazarr.loadbalancer.server.port=6767"
 
   #Plex Auto Languages - This switches languages automatically example: watching english show and non english speaks you get subtitle
@@ -432,6 +450,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.wizarr.rule=Host(`convites.homelab`)"
+      - "traefik.http.routers.wizarr.entrypoints=websecure"
+      - "traefik.http.routers.wizarr.tls=true"
       - "traefik.http.services.wizarr.loadbalancer.server.port=5690"
     restart: unless-stopped
 
@@ -449,6 +469,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dozzle.rule=Host(`logs.homelab`)"
+      - "traefik.http.routers.dozzle.entrypoints=websecure"
+      - "traefik.http.routers.dozzle.tls=true"
       - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
     restart: unless-stopped
 
@@ -521,6 +543,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.metube.rule=Host(`metube.homelab`)"
+      - "traefik.http.routers.metube.entrypoints=websecure"
+      - "traefik.http.routers.metube.tls=true"
       - "traefik.http.services.metube.loadbalancer.server.port=8081"
     restart: unless-stopped
 
@@ -553,6 +577,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.homepage.rule=Host(`dashboard.homelab`)"
+      - "traefik.http.routers.homepage.entrypoints=websecure"
+      - "traefik.http.routers.homepage.tls=true"
       - "traefik.http.services.homepage.loadbalancer.server.port=3000"
     restart: unless-stopped
 
@@ -587,6 +613,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.forgejo.rule=Host(`git.homelab`)"
+      - "traefik.http.routers.forgejo.entrypoints=websecure"
+      - "traefik.http.routers.forgejo.tls=true"
       - "traefik.http.services.forgejo.loadbalancer.server.port=3000"
     restart: unless-stopped
 
@@ -616,6 +644,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.whisparr.rule=Host(`whisparr.homelab`)"
+      - "traefik.http.routers.whisparr.entrypoints=websecure"
+      - "traefik.http.routers.whisparr.tls=true"
       - "traefik.http.services.whisparr.loadbalancer.server.port=6969"
     restart: unless-stopped
 
@@ -648,6 +678,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.stash.rule=Host(`stash.homelab`)"
+      - "traefik.http.routers.stash.entrypoints=websecure"
+      - "traefik.http.routers.stash.tls=true"
       - "traefik.http.services.stash.loadbalancer.server.port=9999"
     restart: unless-stopped
 
@@ -705,6 +737,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.authelia.rule=Host(`auth.homelab`)"
+      - "traefik.http.routers.authelia.entrypoints=websecure"
+      - "traefik.http.routers.authelia.tls=true"
       - "traefik.http.services.authelia.loadbalancer.server.port=9091"
     restart: unless-stopped
 
@@ -771,6 +805,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.qbittorrent.rule=Host(`downloads.homelab`)"
+      - "traefik.http.routers.qbittorrent.entrypoints=websecure"
+      - "traefik.http.routers.qbittorrent.tls=true"
       - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
     restart: unless-stopped
 
@@ -803,6 +839,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.wg-easy.rule=Host(`vpn.homelab`)"
+      - "traefik.http.routers.wg-easy.entrypoints=websecure"
+      - "traefik.http.routers.wg-easy.tls=true"
       - "traefik.http.services.wg-easy.loadbalancer.server.port=51821"
     restart: unless-stopped
 
@@ -829,6 +867,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.gotify.rule=Host(`notificacoes.homelab`)"
+      - "traefik.http.routers.gotify.entrypoints=websecure"
+      - "traefik.http.routers.gotify.tls=true"
       - "traefik.http.services.gotify.loadbalancer.server.port=80"
     restart: unless-stopped
 
@@ -851,6 +891,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.maintainerr.rule=Host(`maintainerr.homelab`)"
+      - "traefik.http.routers.maintainerr.entrypoints=websecure"
+      - "traefik.http.routers.maintainerr.tls=true"
       - "traefik.http.services.maintainerr.loadbalancer.server.port=6246"
     restart: unless-stopped
 
@@ -876,6 +918,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.speedtest.rule=Host(`speedtest.homelab`)"
+      - "traefik.http.routers.speedtest.entrypoints=websecure"
+      - "traefik.http.routers.speedtest.tls=true"
       - "traefik.http.services.speedtest.loadbalancer.server.port=80"
     restart: unless-stopped
 
@@ -897,6 +941,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.it-tools.rule=Host(`tools.homelab`)"
+      - "traefik.http.routers.it-tools.entrypoints=websecure"
+      - "traefik.http.routers.it-tools.tls=true"
       - "traefik.http.services.it-tools.loadbalancer.server.port=80"
     restart: unless-stopped
 
@@ -925,6 +971,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.mealie.rule=Host(`receitas.homelab`)"
+      - "traefik.http.routers.mealie.entrypoints=websecure"
+      - "traefik.http.routers.mealie.tls=true"
       - "traefik.http.services.mealie.loadbalancer.server.port=9000"
     restart: unless-stopped
 
