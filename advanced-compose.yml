@@ -20,12 +20,62 @@
 ---
 version: "3.0"
 
-networks: #This is used if you have a reverse proxy. I use Nginx Proxy Manager but anything will do
-  proxy: #You can remove this block if you are not planning to use a vpn
-    external:
-      name: proxy
+networks:
+  proxy:
+    driver: bridge
 
 services:
+  # ============================================
+  # DNS & AD BLOCKING
+  # ============================================
+
+  #AdGuard Home - Network-wide DNS with ad blocking
+  #
+  #First run: Access http://SERVER_IP:3001 to complete setup
+  #After setup, configure your router/devices to use SERVER_IP as DNS
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: adguard
+    hostname: adguard
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 3001:3000/tcp  # Admin UI (initial setup)
+      - 8443:443/tcp   # HTTPS admin
+      - 853:853/tcp    # DNS-over-TLS
+    volumes:
+      - ${BASE_PATH}/adguard/work:/opt/adguardhome/work
+      - ${BASE_PATH}/adguard/conf:/opt/adguardhome/conf
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adguard.rule=Host(`dns.homelab`)"
+      - "traefik.http.services.adguard.loadbalancer.server.port=3000"
+    restart: unless-stopped
+
+  # ============================================
+  # REVERSE PROXY
+  # ============================================
+
+  #Traefik - Reverse proxy for friendly URLs
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8888:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - proxy
+    restart: unless-stopped
+
   #Plex - used to display the media
   #
   #This can also be replaced by Emby/Jellyfin
@@ -45,8 +95,10 @@ services:
      - /dev/dri:/dev/dri #Required for plex HW transcoding / QuickSync
     volumes:
       - ${BASE_PATH}/plex/config:/config
-      - ${MEDIA_SHARE}/media/tv:/tv
-      - ${MEDIA_SHARE}/media/movies:/movies
+      - ${MEDIA_SHARE}/tv:/tv
+      - ${MEDIA_SHARE}/movies:/movies
+      - ${MEDIA_SHARE}/music:/music
+      - ${MEDIA_SHARE}/concerts:/concerts
     restart: unless-stopped
 
   #Radarr - used to find movies automatically
@@ -58,12 +110,16 @@ services:
       - PGID=${GUID}
       - TZ=${TZ}
     volumes:
-      - ${BASE_PATH}/radarr/config:/config
+      - /opt/docker-configs/radarr/config:/config
       - ${MEDIA_SHARE}:/share #Access to the entire share
-    #networks: #Does not connect to seerr if you use NPM
-    #  - proxy
+    networks:
+      - proxy
     ports:
       - 7878:7878
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.homelab`)"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
     restart: unless-stopped
 
   #Sonarr - used to find tv shows automatically
@@ -75,12 +131,16 @@ services:
       - PGID=${GUID}
       - TZ=${TZ}
     volumes:
-      - ${BASE_PATH}/sonarr/config:/config
+      - /opt/docker-configs/sonarr/config:/config
       - ${MEDIA_SHARE}:/share #Access to the entire share
-    #networks: #Does not connect to seerr if you use NPM
-    #  - proxy
+    networks:
+      - proxy
     ports:
       - 8989:8989
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.homelab`)"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
     restart: unless-stopped
 
   #Readarr - Used to download books
@@ -110,10 +170,16 @@ services:
       - PGID=${GUID}
       - TZ=${TZ}
     volumes:
-      - ${BASE_PATH}/lidarr/config:/config
+      - /opt/docker-configs/lidarr/config:/config
       - ${MEDIA_SHARE}:/share
+    networks:
+      - proxy
     ports:
       - 8686:8686
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lidarr.rule=Host(`lidarr.homelab`)"
+      - "traefik.http.services.lidarr.loadbalancer.server.port=8686"
     restart: unless-stopped
 
   #Prowlarr - manages your Sonarr, Radarr and download client
@@ -125,11 +191,15 @@ services:
       - PGID=${GUID}
       - TZ=${TZ}
     volumes:
-      - ${BASE_PATH}/prowlarr/config:/config
-    #networks:
-    #  - proxy
+      - /opt/docker-configs/prowlarr/config:/config
+    networks:
+      - proxy
     ports:
       - 9696:9696
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.homelab`)"
+      - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
     restart: unless-stopped
 
   #Autobrr - used to grab torrents using the trackers IRC channel - Increases seeding due to grabbing content before RSS feed
@@ -159,10 +229,15 @@ services:
       - TZ=${TZ}
     volumes:
       - ${BASE_PATH}/seerr/config:/app/config
-    #networks:
-    #  - proxy
+      - ${MEDIA_SHARE}:/share  # Access to validate root folders
+    networks:
+      - proxy
     ports:
       - 5055:5055
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.seerr.rule=Host(`pedirfilmes.homelab`)"
+      - "traefik.http.services.seerr.loadbalancer.server.port=5055"
     restart: unless-stopped
 
   #Byparr - Used as a proxy server to bypass Cloudflare and DDoS-GUARD protection
@@ -173,6 +248,7 @@ services:
   byparr:
     image: ghcr.io/thephaseless/byparr:latest
     container_name: byparr
+    init: true  # Reaps zombie processes from Camoufox/Firefox
     environment:
       - LOG_LEVEL=info
       - TZ=${TZ}
@@ -182,16 +258,20 @@ services:
 
   #Qbittorrent - torrenting software
   #
-  #You can also use RuTorrent, Transmission or Deluge
+  #All traffic routed through Gluetun VPN container
+  #Ports are defined on the gluetun container since qBittorrent uses its network
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
+    network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
     environment:
       - PUID=${PUID}
       - PGID=${GUID}
       - TZ=${TZ}
       - WEBUI_PORT=8080
-      - TORRENTING_PORT=8694 #Make sure to port forward this port in your router so you can seed more effectively
+      - TORRENTING_PORT=8694
     volumes:
       - ${BASE_PATH}/qbittorrent/config:/config
       - ${MEDIA_SHARE}:/share
@@ -211,6 +291,10 @@ services:
       - proxy
     ports:
       - 8181:8181
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tautulli.rule=Host(`tautulli.homelab`)"
+      - "traefik.http.services.tautulli.loadbalancer.server.port=8181"
     restart: unless-stopped
 
   #Tdarr - to transcode videos from one format to another like x265 or H.265
@@ -267,10 +351,16 @@ services:
       - PGID=${GUID}
       - TZ=${TZ}
     volumes:
-      - ${BASE_PATH}/bazarr/config:/config
+      - /opt/docker-configs/bazarr/config:/config
       - ${MEDIA_SHARE}:/share
+    networks:
+      - proxy
     ports:
       - 6767:6767
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bazarr.rule=Host(`legendas.homelab`)"
+      - "traefik.http.services.bazarr.loadbalancer.server.port=6767"
 
   #Plex Auto Languages - This switches languages automatically example: watching english show and non english speaks you get subtitle
   #
@@ -329,10 +419,16 @@ services:
   wizarr:
     container_name: wizarr
     image: ghcr.io/wizarrrr/wizarr:latest
+    networks:
+      - proxy
     ports:
       - 5690:5690
     volumes:
       - ${BASE_PATH}/wizarr/data/database:/data/database
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wizarr.rule=Host(`convites.homelab`)"
+      - "traefik.http.services.wizarr.loadbalancer.server.port=5690"
     restart: unless-stopped
 
   #Dozzle - Used to easily view logs of any container in real time!
@@ -342,8 +438,14 @@ services:
     image: amir20/dozzle:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - proxy
     ports:
       - 9999:8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dozzle.rule=Host(`logs.homelab`)"
+      - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
     restart: unless-stopped
 
   #Unpackerr - Used to unzip zipped files
@@ -392,6 +494,33 @@ services:
     restart: unless-stopped
 
   # ============================================
+  # MEDIA DOWNLOADS
+  # ============================================
+
+  #MeTube - Web UI for yt-dlp (YouTube and 1000+ sites)
+  #
+  #Browser extensions available for one-click downloads
+  #https://github.com/alexta69/metube
+  metube:
+    image: ghcr.io/alexta69/metube:latest
+    container_name: metube
+    environment:
+      - UID=${PUID}
+      - GID=${GUID}
+      - TZ=${TZ}
+    volumes:
+      - ${MEDIA_SHARE}/downloads:/downloads
+    networks:
+      - proxy
+    ports:
+      - 8081:8081
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.metube.rule=Host(`metube.homelab`)"
+      - "traefik.http.services.metube.loadbalancer.server.port=8081"
+    restart: unless-stopped
+
+  # ============================================
   # DASHBOARD
   # ============================================
 
@@ -401,18 +530,60 @@ services:
   homepage:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
+    group_add:
+      - "999"  # docker group GID for socket access
     environment:
       - PUID=${PUID}
       - PGID=${GUID}
       - TZ=${TZ}
-      - HOMEPAGE_ALLOWED_HOSTS=10.10.11.201:3000,localhost:3000,homelab:3000
+      - HOMEPAGE_ALLOWED_HOSTS=10.10.11.201:3000,localhost:3000,homelab:3000,dashboard.homelab
     volumes:
       - ${BASE_PATH}/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /mnt/truenas/movies:/mnt/truenas/movies:ro
       - /mnt/truenas/config:/mnt/truenas/config:ro
+    networks:
+      - proxy
     ports:
       - 3000:3000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homepage.rule=Host(`dashboard.homelab`)"
+      - "traefik.http.services.homepage.loadbalancer.server.port=3000"
+    restart: unless-stopped
+
+  # ============================================
+  # SOURCE CODE MANAGEMENT
+  # ============================================
+
+  #Forgejo - Self-hosted Git service (lightweight Gitea fork)
+  #
+  #Community-driven fork focused on sustainability and independence
+  #First run: Access http://SERVER_IP:4000 to complete setup
+  #SSH access available on port 2222
+  #https://forgejo.org/
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:13
+    container_name: forgejo
+    environment:
+      - USER_UID=${PUID}
+      - USER_GID=${GUID}
+      - TZ=${TZ}
+      - FORGEJO__database__DB_TYPE=sqlite3
+      - FORGEJO__server__ROOT_URL=http://${SERVER_IP}:4000/
+      - FORGEJO__server__SSH_PORT=2222
+      - FORGEJO__server__SSH_LISTEN_PORT=22
+    volumes:
+      - ${BASE_PATH}/forgejo/data:/data
+    networks:
+      - proxy
+    ports:
+      - 4000:3000   # Web UI
+      - 2222:22     # SSH for Git
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.forgejo.rule=Host(`git.homelab`)"
+      - "traefik.http.services.forgejo.loadbalancer.server.port=3000"
     restart: unless-stopped
 
   # ============================================
@@ -432,10 +603,16 @@ services:
       - PGID=${GUID}
       - TZ=${TZ}
     volumes:
-      - ${BASE_PATH}/whisparr/config:/config
+      - /opt/docker-configs/whisparr/config:/config
       - ${MEDIA_SHARE}:/share  # Full share access for hardlinking (downloads + xxx)
+    networks:
+      - proxy
     ports:
       - 6969:6969
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whisparr.rule=Host(`whisparr.homelab`)"
+      - "traefik.http.services.whisparr.loadbalancer.server.port=6969"
     restart: unless-stopped
 
   #Stash - Adult media organizer with metadata scraping
@@ -455,11 +632,347 @@ services:
       - STASH_METADATA=/metadata/
       - STASH_CACHE=/cache/
     volumes:
-      - ${BASE_PATH}/stash/config:/root/.stash
+      - /opt/docker-configs/stash/config:/root/.stash
       - ${DOCKER_PATH}/stash/generated:/generated
       - ${DOCKER_PATH}/stash/metadata:/metadata
       - ${DOCKER_PATH}/stash/cache:/cache
       - ${MEDIA_SHARE}/xxx:/data  # Adult content library
+    networks:
+      - proxy
     ports:
       - 9998:9999
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.stash.rule=Host(`stash.homelab`)"
+      - "traefik.http.services.stash.loadbalancer.server.port=9999"
+    restart: unless-stopped
+
+  # ============================================
+  # SECURITY & AUTHENTICATION
+  # ============================================
+
+  #Docker Socket Proxy - Secure proxy for Docker socket access
+  #
+  #Prevents containers from getting root-equivalent access to the host
+  #Traefik and Dozzle connect to this instead of the raw socket
+  #https://github.com/Tecnativa/docker-socket-proxy
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    container_name: docker-socket-proxy
+    environment:
+      - CONTAINERS=1
+      - SERVICES=1
+      - TASKS=1
+      - NETWORKS=1
+      - IMAGES=1
+      - INFO=1
+      - EVENTS=1
+      - PING=1
+      - VERSION=1
+      - POST=0  # Read-only
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - proxy
+    ports:
+      - 2375:2375
+    privileged: true
+    restart: unless-stopped
+
+  #Authelia - Single Sign-On and 2FA portal
+  #
+  #Protects all services behind Traefik with a unified login page
+  #Supports TOTP, WebAuthn/FIDO2, and Duo push
+  #https://www.authelia.com/
+  authelia:
+    image: authelia/authelia:4.37
+    container_name: authelia
+    environment:
+      - TZ=${TZ}
+      - AUTHELIA_JWT_SECRET=${AUTHELIA_JWT_SECRET}
+      - AUTHELIA_SESSION_SECRET=${AUTHELIA_SESSION_SECRET}
+      - AUTHELIA_STORAGE_ENCRYPTION_KEY=${AUTHELIA_STORAGE_ENCRYPTION_KEY}
+    volumes:
+      - ${BASE_PATH}/authelia/config:/config
+    networks:
+      - proxy
+    ports:
+      - 9091:9091
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.authelia.rule=Host(`auth.homelab`)"
+      - "traefik.http.services.authelia.loadbalancer.server.port=9091"
+    restart: unless-stopped
+
+  #Vaultwarden - Lightweight Bitwarden-compatible password manager
+  #
+  #Use official Bitwarden clients (browser, mobile, desktop)
+  #Requires HTTPS for browser extensions (use via Traefik)
+  #https://github.com/dani-garcia/vaultwarden
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${BASE_PATH}/vaultwarden/data:/data
+    networks:
+      - proxy
+    ports:
+      - 8222:80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vaultwarden.rule=Host(`vault.homelab`)"
+      - "traefik.http.services.vaultwarden.loadbalancer.server.port=80"
+    restart: unless-stopped
+
+  # ============================================
+  # VPN & NETWORKING
+  # ============================================
+
+  #Gluetun - VPN container for routing traffic through WireGuard/OpenVPN
+  #
+  #qBittorrent routes all traffic through this container
+  #Built-in kill switch prevents leaks
+  #https://github.com/qdm12/gluetun
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
+      - VPN_TYPE=${VPN_TYPE}
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+      - SERVER_COUNTRIES=Ireland
+      - TZ=${TZ}
+      - FIREWALL_OUTBOUND_SUBNETS=10.10.11.0/24,172.16.0.0/12
+      - HTTPPROXY=off
+      - SHADOWSOCKS=off
+      - DOT=off
+    networks:
+      - proxy
+    ports:
+      - 8000:8000      # Gluetun control server
+      - 8080:8080      # qBittorrent WebUI
+      - 8694:8694       # qBittorrent torrenting
+      - 8694:8694/udp
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent.rule=Host(`downloads.homelab`)"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+    restart: unless-stopped
+
+  #WireGuard Easy - VPN server with web UI
+  #
+  #Secure remote access to your homelab from anywhere
+  #QR codes for easy mobile setup
+  #https://github.com/wg-easy/wg-easy
+  wg-easy:
+    image: ghcr.io/wg-easy/wg-easy:latest
+    container_name: wg-easy
+    environment:
+      - LANGUAGE=en
+      - WG_HOST=${SERVER_IP}
+      - PASSWORD_HASH=$$2a$$12$$placeholder
+      - WG_DEFAULT_DNS=10.10.11.201
+    volumes:
+      - ${BASE_PATH}/wg-easy/config:/etc/wireguard
+    networks:
+      - proxy
+    ports:
+      - 51820:51820/udp
+      - 51821:51821/tcp
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.ip_forward=1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wg-easy.rule=Host(`vpn.homelab`)"
+      - "traefik.http.services.wg-easy.loadbalancer.server.port=51821"
+    restart: unless-stopped
+
+  # ============================================
+  # MONITORING & MAINTENANCE
+  # ============================================
+
+  #Scrutiny - Hard drive S.M.A.R.T. health monitoring
+  #
+  #Tracks temperature trends and degradation over time
+  #https://github.com/AnalogJ/scrutiny
+  scrutiny-influxdb:
+    image: influxdb:2.7
+    container_name: scrutiny-influxdb
+    volumes:
+      - ${BASE_PATH}/scrutiny/influxdb:/var/lib/influxdb2
+    networks:
+      - proxy
+    restart: unless-stopped
+
+  scrutiny:
+    image: ghcr.io/analogj/scrutiny:master-web
+    container_name: scrutiny
+    cap_add:
+      - SYS_RAWIO
+    depends_on:
+      - scrutiny-influxdb
+    environment:
+      - TZ=${TZ}
+      - SCRUTINY_WEB_INFLUXDB_HOST=scrutiny-influxdb
+    volumes:
+      - ${BASE_PATH}/scrutiny/config:/opt/scrutiny/config
+      - /run/udev:/run/udev:ro
+    networks:
+      - proxy
+    ports:
+      - 8082:8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.scrutiny.rule=Host(`discos.homelab`)"
+      - "traefik.http.services.scrutiny.loadbalancer.server.port=8080"
+    restart: unless-stopped
+
+  #Gotify - Self-hosted push notification server
+  #
+  #Unified notification endpoint for all services
+  #Android app available for push notifications
+  #https://gotify.net/
+  gotify:
+    image: gotify/server:latest
+    container_name: gotify
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${BASE_PATH}/gotify/data:/app/data
+    networks:
+      - proxy
+    ports:
+      - 8083:80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gotify.rule=Host(`notificacoes.homelab`)"
+      - "traefik.http.services.gotify.loadbalancer.server.port=80"
+    restart: unless-stopped
+
+  #Maintainerr - Automated Plex media cleanup
+  #
+  #Creates rules to remove unwatched content with grace periods
+  #Shows "Leaving Soon" collection on Plex
+  #https://github.com/jorenn92/Maintainerr
+  maintainerr:
+    image: ghcr.io/jorenn92/maintainerr:latest
+    container_name: maintainerr
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${BASE_PATH}/maintainerr/data:/opt/data
+    networks:
+      - proxy
+    ports:
+      - 6246:6246
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.maintainerr.rule=Host(`maintainerr.homelab`)"
+      - "traefik.http.services.maintainerr.loadbalancer.server.port=6246"
+    restart: unless-stopped
+
+  #Speedtest Tracker - Automated internet speed testing with history
+  #
+  #Scheduled tests with graphs and trend analysis
+  #https://github.com/alexjustesen/speedtest-tracker
+  speedtest-tracker:
+    image: lscr.io/linuxserver/speedtest-tracker:latest
+    container_name: speedtest-tracker
+    environment:
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=${TZ}
+      - DB_CONNECTION=sqlite
+      - APP_KEY=base64:V1NVcVVIVmk5cDVnelUwMzNOQjVRM1R2NEZYSmpGZGg=
+    volumes:
+      - ${BASE_PATH}/speedtest-tracker/config:/config
+    networks:
+      - proxy
+    ports:
+      - 8084:80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.speedtest.rule=Host(`speedtest.homelab`)"
+      - "traefik.http.services.speedtest.loadbalancer.server.port=80"
+    restart: unless-stopped
+
+  # ============================================
+  # PRODUCTIVITY & TOOLS
+  # ============================================
+
+  #IT-Tools - Collection of 100+ developer utilities
+  #
+  #JSON/YAML converters, hash generators, Base64, JWT decoder, etc.
+  #https://github.com/CorentinTh/it-tools
+  it-tools:
+    image: corentinth/it-tools:latest
+    container_name: it-tools
+    networks:
+      - proxy
+    ports:
+      - 8085:80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.it-tools.rule=Host(`tools.homelab`)"
+      - "traefik.http.services.it-tools.loadbalancer.server.port=80"
+    restart: unless-stopped
+
+  #Mealie - Recipe manager and meal planner
+  #
+  #Import recipes by URL, strips ads and blog posts
+  #Shopping lists and household management
+  #https://mealie.io/
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:latest
+    container_name: mealie
+    environment:
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=${TZ}
+      - ALLOW_SIGNUP=false
+      - MAX_WORKERS=1
+      - WEB_CONCURRENCY=1
+      - BASE_URL=http://${SERVER_IP}:9925
+    volumes:
+      - ${BASE_PATH}/mealie/data:/app/data
+    networks:
+      - proxy
+    ports:
+      - 9925:9000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mealie.rule=Host(`receitas.homelab`)"
+      - "traefik.http.services.mealie.loadbalancer.server.port=9000"
+    restart: unless-stopped
+
+  #Actual Budget - Personal finance and budgeting (YNAB alternative)
+  #
+  #Local-first architecture, works offline, syncs across devices
+  #https://actualbudget.org/
+  actual-budget:
+    image: actualbudget/actual-server:latest
+    container_name: actual-budget
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${BASE_PATH}/actual-budget/data:/data
+    networks:
+      - proxy
+    ports:
+      - 5006:5006
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.actual.rule=Host(`orcamento.homelab`)"
+      - "traefik.http.services.actual.loadbalancer.server.port=5006"
     restart: unless-stopped

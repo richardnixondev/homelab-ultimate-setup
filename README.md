@@ -23,6 +23,8 @@ Currently you can choose from the **Basic** or the **Advanced** compose.
 
 | Tool | Status | Analysis | Recommendation |
 |------|--------|----------|----------------|
+| **AdGuard Home** | :white_check_mark: | Network-wide DNS with ad blocking. Lightweight, easy to configure. Supports DNS-over-HTTPS/TLS. | Keep. Alternatives: [Pi-hole](https://pi-hole.net/), [Blocky](https://github.com/0xERR0R/blocky). |
+| **Traefik** | :white_check_mark: | Modern reverse proxy with automatic SSL and Docker integration. Cloud-native design. | Keep. Alternatives: [Nginx Proxy Manager](https://nginxproxymanager.com/), [Caddy](https://caddyserver.com/). |
 | **Plex** | :white_check_mark: | Remains the most polished and user-friendly media server. Extensive device support. Plex Pass optional for advanced features. | Keep. Alternatives: [Jellyfin](https://jellyfin.org/) (open-source, free) or [Emby](https://emby.media/). |
 | **Radarr** | :white_check_mark: | Actively maintained. Part of the Servarr ecosystem. | Keep. |
 | **Sonarr** | :white_check_mark: | Actively maintained. Requires v4+. | Keep. |
@@ -45,6 +47,20 @@ Currently you can choose from the **Basic** or the **Advanced** compose.
 | **Whisparr** | :white_check_mark: | Part of the Servarr ecosystem. Automated adult content management. Integrates with Prowlarr. | Keep. |
 | **Stash** | :white_check_mark: | Adult media organizer with metadata scraping, tagging, web streaming. | Keep. |
 | **Homepage** | :white_check_mark: | Modern, highly customizable dashboard. Supports widgets for all *arr apps. | Keep. |
+| **MeTube** | :white_check_mark: | Web UI for yt-dlp supporting YouTube and 1000+ sites. Browser extensions available. | Keep. |
+| **Forgejo** | :white_check_mark: | Community-driven Git service fork of Gitea. Lightweight, actively maintained, focused on sustainability. | Keep. Alternatives: [Gitea](https://gitea.io/), [GitLab](https://gitlab.com/). |
+| **Gluetun** | :white_check_mark: | VPN client supporting 30+ providers. Routes container traffic through VPN tunnel via WireGuard/OpenVPN. | Keep. Essential for torrent privacy. |
+| **Authelia** | :white_check_mark: | Open-source SSO and 2FA portal. Integrates with Traefik as forward-auth middleware. | Keep. Alternatives: [Authentik](https://goauthentik.io/). |
+| **Vaultwarden** | :white_check_mark: | Lightweight Bitwarden server implementation in Rust. Full API compatibility. | Keep. |
+| **Docker Socket Proxy** | :white_check_mark: | Secure proxy to Docker socket. Limits API access for containers that need Docker info. | Keep. Security best practice. |
+| **WireGuard Easy** | :white_check_mark: | Simple WireGuard VPN server with web management UI. | Keep. |
+| **Scrutiny** | :white_check_mark: | S.M.A.R.T. disk monitoring with web UI and alerting. | Keep. |
+| **Gotify** | :white_check_mark: | Self-hosted push notification server with REST API and web client. | Keep. |
+| **Maintainerr** | :white_check_mark: | Automated Plex library maintenance based on custom rules. | Keep. |
+| **Speedtest Tracker** | :white_check_mark: | Automated internet speed tests with historical data and graphs. | Keep. |
+| **IT-Tools** | :white_check_mark: | Collection of 80+ developer and networking tools in a web UI. | Keep. |
+| **Mealie** | :white_check_mark: | Recipe management with meal planning, shopping lists, and URL import. | Keep. |
+| **Actual Budget** | :white_check_mark: | Privacy-focused personal finance with envelope budgeting. Local-first, no cloud dependency. | Keep. |
 
 ---
 
@@ -98,6 +114,8 @@ Currently you can choose from the **Basic** or the **Advanced** compose.
 
 **Advanced Compose** Includes:
 
+- **AdGuard Home:** Network-wide DNS with ad blocking.
+- **Traefik:** Reverse proxy for friendly URLs and SSL.
 - **Plex:** Media server for streaming movies and TV shows.
 - **Radarr:** Movie management and automation.
 - **Sonarr:** TV show management and automation.
@@ -113,12 +131,26 @@ Currently you can choose from the **Basic** or the **Advanced** compose.
 - **Dozzle:** Used to view the logs of any container.
 - **Wizarr:** Used to create links that can be sent to users so they can be invited to your media server.
 - **Kometa:** Used to create collections, overlays, playlists and much more! *(Formerly Plex Meta Manager)*
-- **Plex Auto Languages:** Used to auto update the language of your Plex TV episodes.
 - **Recyclarr:** Used to sync the config of TRaSH Guides with your *arr stack.
 - **Unpackerr:** Used to extract archived downloads automatically.
+- **Plex Auto Languages:** Automatically switches audio/subtitle languages based on user preferences.
 - **Whisparr:** Automated adult content management (part of the Servarr family).
 - **Stash:** Adult media organizer with metadata scraping, tagging, and web-based streaming.
+- **MeTube:** YouTube and web video downloader with browser extensions.
 - **Homepage:** Modern dashboard to access all your services in one place.
+- **Forgejo:** Self-hosted Git service for source code management (lightweight Gitea fork).
+- **Gluetun:** VPN client container routing qBittorrent traffic through Surfshark WireGuard.
+- **Authelia:** Single Sign-On and Two-Factor Authentication portal.
+- **Vaultwarden:** Lightweight Bitwarden-compatible password manager.
+- **Docker Socket Proxy:** Secure proxy for Docker socket access (replaces direct socket mounts).
+- **WireGuard Easy:** Simple WireGuard VPN server with web UI.
+- **Scrutiny:** Hard drive S.M.A.R.T. monitoring with web dashboard.
+- **Gotify:** Self-hosted push notification server.
+- **Maintainerr:** Automated Plex library maintenance and cleanup.
+- **Speedtest Tracker:** Automated internet speed testing and history.
+- **IT-Tools:** Collection of developer and networking utilities.
+- **Mealie:** Recipe management and meal planning.
+- **Actual Budget:** Privacy-focused personal finance and budgeting.
 
 ---
 
@@ -201,6 +233,8 @@ To allow hardlinking to work (which you will definitely want!) you will have to 
 | Service | Port | URL |
 |---------|------|-----|
 | Homepage | 3000 | http://IP:3000 |
+| AdGuard Home | 3001 | http://IP:3001 |
+| Traefik Dashboard | 8888 | http://IP:8888 |
 | Plex | 32400 | http://IP:32400/web |
 | Radarr | 7878 | http://IP:7878 |
 | Sonarr | 8989 | http://IP:8989 |
@@ -217,6 +251,54 @@ To allow hardlinking to work (which you will definitely want!) you will have to 
 | Wizarr | 5690 | http://IP:5690 |
 | Dozzle | 9999 | http://IP:9999 |
 | Byparr | 8191 | http://IP:8191 |
+| MeTube | 8081 | http://IP:8081 |
+| Forgejo | 4000 | http://IP:4000 |
+| Forgejo SSH | 2222 | ssh://git@IP:2222 |
+| Authelia | 9091 | http://IP:9091 |
+| Vaultwarden | 8222 | http://IP:8222 |
+| Gluetun (Control) | 8000 | http://IP:8000 |
+| WireGuard Easy | 51821 | http://IP:51821 |
+| Scrutiny | 8082 | http://IP:8082 |
+| Gotify | 8083 | http://IP:8083 |
+| Maintainerr | 6246 | http://IP:6246 |
+| Speedtest Tracker | 8084 | http://IP:8084 |
+| IT-Tools | 8085 | http://IP:8085 |
+| Mealie | 9925 | http://IP:9925 |
+| Actual Budget | 5006 | http://IP:5006 |
+
+---
+
+## Known Issues & Workarounds
+
+### Gluetun breaks Docker image pulls
+
+Gluetun uses `NET_ADMIN` capability which modifies the host's iptables rules. This causes Docker to lose connectivity to container registries (`ghcr.io`, `lscr.io`, Docker Hub). The issue persists even after stopping Gluetun.
+
+**Workaround — stop Gluetun before pulling images:**
+```bash
+# Stop VPN containers first
+docker stop gluetun qbittorrent
+
+# Pull images normally
+docker compose -f advanced-compose.yml pull
+
+# Restart everything
+docker compose -f advanced-compose.yml up -d
+```
+
+If pulls still fail after stopping Gluetun, restart the Docker daemon:
+```bash
+sudo systemctl restart docker
+docker compose -f advanced-compose.yml up -d
+```
+
+### Authelia pinned to v4.37
+
+Authelia v4.38+ requires HTTPS for `authelia_url` in session cookie configuration. Since this homelab uses HTTP internally with `.homelab` domains (no TLS), Authelia is pinned to `authelia/authelia:4.37` which supports the legacy `domain` config without HTTPS. If you add TLS via Traefik in the future, you can upgrade to `latest`.
+
+### Byparr zombie processes
+
+Byparr spawns Camoufox/Firefox child processes that can accumulate as zombie processes (thousands over time). The `init: true` flag is set in compose to use tini as PID 1 and reap them automatically. Do not remove this flag.
 
 ---
 
