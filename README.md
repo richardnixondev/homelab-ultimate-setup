@@ -54,7 +54,6 @@ Everything runs behind a single `docker compose up -d` with Traefik routing `*.h
 | **Vaultwarden** | :white_check_mark: | Lightweight Bitwarden server implementation in Rust. Full API compatibility. | Keep. |
 | **Docker Socket Proxy** | :white_check_mark: | Secure proxy to Docker socket. Limits API access for containers that need Docker info. | Keep. Security best practice. |
 | **WireGuard Easy** | :white_check_mark: | Simple WireGuard VPN server with web management UI. | Keep. |
-| **Scrutiny** | :white_check_mark: | S.M.A.R.T. disk monitoring with web UI and alerting. | Keep. |
 | **Gotify** | :white_check_mark: | Self-hosted push notification server with REST API and web client. | Keep. |
 | **Maintainerr** | :white_check_mark: | Automated Plex library maintenance based on custom rules. | Keep. |
 | **Speedtest Tracker** | :white_check_mark: | Automated internet speed tests with historical data and graphs. | Keep. |
@@ -144,7 +143,6 @@ Everything runs behind a single `docker compose up -d` with Traefik routing `*.h
 - **Vaultwarden:** Lightweight Bitwarden-compatible password manager.
 - **Docker Socket Proxy:** Secure proxy for Docker socket access (replaces direct socket mounts).
 - **WireGuard Easy:** Simple WireGuard VPN server with web UI.
-- **Scrutiny:** Hard drive S.M.A.R.T. monitoring with web dashboard.
 - **Gotify:** Self-hosted push notification server.
 - **Maintainerr:** Automated Plex library maintenance and cleanup.
 - **Speedtest Tracker:** Automated internet speed testing and history.
@@ -258,7 +256,6 @@ To allow hardlinking to work (which you will definitely want!) you will have to 
 | Vaultwarden | 8222 | http://IP:8222 |
 | Gluetun (Control) | 8000 | http://IP:8000 |
 | WireGuard Easy | 51821 | http://IP:51821 |
-| Scrutiny | 8082 | http://IP:8082 |
 | Gotify | 8083 | http://IP:8083 |
 | Maintainerr | 6246 | http://IP:6246 |
 | Speedtest Tracker | 8084 | http://IP:8084 |

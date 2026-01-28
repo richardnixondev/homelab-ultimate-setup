@@ -802,42 +802,6 @@ services:
   # MONITORING & MAINTENANCE
   # ============================================
 
-  #Scrutiny - Hard drive S.M.A.R.T. health monitoring
-  #
-  #Tracks temperature trends and degradation over time
-  #https://github.com/AnalogJ/scrutiny
-  scrutiny-influxdb:
-    image: influxdb:2.7
-    container_name: scrutiny-influxdb
-    volumes:
-      - ${BASE_PATH}/scrutiny/influxdb:/var/lib/influxdb2
-    networks:
-      - proxy
-    restart: unless-stopped
-
-  scrutiny:
-    image: ghcr.io/analogj/scrutiny:master-web
-    container_name: scrutiny
-    cap_add:
-      - SYS_RAWIO
-    depends_on:
-      - scrutiny-influxdb
-    environment:
-      - TZ=${TZ}
-      - SCRUTINY_WEB_INFLUXDB_HOST=scrutiny-influxdb
-    volumes:
-      - ${BASE_PATH}/scrutiny/config:/opt/scrutiny/config
-      - /run/udev:/run/udev:ro
-    networks:
-      - proxy
-    ports:
-      - 8082:8080
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.scrutiny.rule=Host(`discos.homelab`)"
-      - "traefik.http.services.scrutiny.loadbalancer.server.port=8080"
-    restart: unless-stopped
-
   #Gotify - Self-hosted push notification server
   #
   #Unified notification endpoint for all services
