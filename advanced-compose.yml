@@ -67,11 +67,15 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
     ports:
       - "80:80"
+      - "443:443"
       - "8888:8080"  # Traefik dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${BASE_PATH}/traefik:/etc/traefik
     networks:
       - proxy
     restart: unless-stopped
@@ -714,6 +718,8 @@ services:
     container_name: vaultwarden
     environment:
       - TZ=${TZ}
+      - DOMAIN=https://vault.homelab
+      - SIGNUPS_ALLOWED=true
     volumes:
       - ${BASE_PATH}/vaultwarden/data:/data
     networks:
@@ -723,6 +729,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vaultwarden.rule=Host(`vault.homelab`)"
+      - "traefik.http.routers.vaultwarden.entrypoints=websecure"
+      - "traefik.http.routers.vaultwarden.tls=true"
       - "traefik.http.services.vaultwarden.loadbalancer.server.port=80"
     restart: unless-stopped
 
