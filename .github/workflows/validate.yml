@@ -68,3 +68,36 @@ jobs:
           yamllint -d "{extends: relaxed, rules: {line-length: {max: 200}, truthy: disable, comments-indentation: disable}}" \
             advanced-compose.yml \
             $(find . -name '*.yaml' -not -path './.github/*' 2>/dev/null)
+
+  check-images:
+    name: Check Docker Images Exist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract and verify images
+        run: |
+          echo "Extracting images from advanced-compose.yml..."
+          images=$(grep -E '^\s+image:' advanced-compose.yml | sed 's/.*image:\s*//' | sed 's/\${[^}]*}/dummy/g' | sort -u)
+
+          failed=0
+          for image in $images; do
+            # Skip images with unresolved variables
+            if echo "$image" | grep -q 'dummy'; then
+              echo "SKIP: $image (contains env variable)"
+              continue
+            fi
+
+            if docker manifest inspect "$image" > /dev/null 2>&1; then
+              echo "OK:   $image"
+            else
+              echo "FAIL: $image — image not found in registry"
+              failed=1
+            fi
+          done
+
+          if [ "$failed" -eq 1 ]; then
+            echo ""
+            echo "Some images could not be found in their registries."
+            exit 1
+          fi
