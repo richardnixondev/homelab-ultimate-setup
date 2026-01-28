@@ -60,6 +60,7 @@ Everything runs behind a single `docker compose up -d` with Traefik routing `*.h
 | **IT-Tools** | :white_check_mark: | Collection of 80+ developer and networking tools in a web UI. | Keep. |
 | **Mealie** | :white_check_mark: | Recipe management with meal planning, shopping lists, and URL import. | Keep. |
 | **Actual Budget** | :white_check_mark: | Privacy-focused personal finance with envelope budgeting. Local-first, no cloud dependency. | Keep. |
+| **Backrest** | :white_check_mark: | Web UI for restic backups. Backs up all homelab configs to TrueNAS with scheduling and retention policies. | Keep. |
 
 ---
 
@@ -149,6 +150,7 @@ Everything runs behind a single `docker compose up -d` with Traefik routing `*.h
 - **IT-Tools:** Collection of developer and networking utilities.
 - **Mealie:** Recipe management and meal planning.
 - **Actual Budget:** Privacy-focused personal finance and budgeting.
+- **Backrest:** Web UI for restic backups — backs up all service configs with scheduling and retention.
 
 ---
 
@@ -262,6 +264,7 @@ To allow hardlinking to work (which you will definitely want!) you will have to 
 | IT-Tools | 8085 | http://IP:8085 |
 | Mealie | 9925 | http://IP:9925 |
 | Actual Budget | 5006 | http://IP:5006 |
+| Backrest | 9898 | http://IP:9898 |
 
 ---
 

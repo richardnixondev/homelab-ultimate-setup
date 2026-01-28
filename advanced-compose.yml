@@ -430,7 +430,8 @@ services:
       - TZ=${TZ}
       #- KOMETA_OVERLAYS_ONLY=true #Tells Kometa to run overlays only
       - KOMETA_CONFIG=/config/config.yml
-      - KOMETA_RUN=true #Runs Kometa Immediately
+      - KOMETA_TIME=03:00 #Runs daily at 3 AM
+      #- KOMETA_RUN=true #Runs Kometa immediately (use for one-off manual runs)
       #- KOMETA_RUN_LIBRARIES=Movies #Tells Kometa to process only a library called "Movies"
     volumes:
       - ${BASE_PATH}/kometa/config:/config
@@ -974,6 +975,42 @@ services:
       - "traefik.http.routers.mealie.entrypoints=websecure"
       - "traefik.http.routers.mealie.tls=true"
       - "traefik.http.services.mealie.loadbalancer.server.port=9000"
+    restart: unless-stopped
+
+  # ============================================
+  # BACKUP & RECOVERY
+  # ============================================
+
+  #Backrest - Web UI for restic backups
+  #
+  #Backs up all homelab configs (NFS + local SQLite DBs) to TrueNAS
+  #First run: Access https://backups.homelab to create admin account
+  #https://github.com/garethgeorge/backrest
+  backrest:
+    image: ghcr.io/garethgeorge/backrest:latest
+    container_name: backrest
+    environment:
+      - TZ=${TZ}
+      - BACKREST_DATA=/data
+      - BACKREST_CONFIG=/config/config.json
+      - XDG_CACHE_HOME=/cache
+    volumes:
+      - ${BASE_PATH}/backrest/data:/data
+      - ${BASE_PATH}/backrest/config:/config
+      - ${BASE_PATH}/backrest/cache:/cache
+      - /mnt/truenas/config:/sources/truenas-config:ro
+      - /opt/docker-configs:/sources/local-configs:ro
+      - /mnt/truenas/backup-appdata:/repos/truenas-backups
+    networks:
+      - proxy
+    ports:
+      - 9898:9898
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backrest.rule=Host(`backups.homelab`)"
+      - "traefik.http.routers.backrest.entrypoints=websecure"
+      - "traefik.http.routers.backrest.tls=true"
+      - "traefik.http.services.backrest.loadbalancer.server.port=9898"
     restart: unless-stopped
 
   #Actual Budget - Personal finance and budgeting (YNAB alternative)
