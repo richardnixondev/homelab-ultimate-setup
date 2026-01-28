@@ -1,10 +1,10 @@
-# <img src="/ultimate_plex_stack_transparent_bg.png" width="300px" alt="The Ultimate Plex Stack"></img>
+# The Ultimate Homelab Stack
 
-> **Fork Notice:** This repository is a fork of the original [ultimate-plex-stack](https://github.com/DonMcD/ultimate-plex-stack). The goal of this fork is to modernize the stack, replacing deprecated tools with current alternatives and maintaining best practices for 2025/2026.
+> **Fork Notice:** Forked from [ultimate-plex-stack](https://github.com/DonMcD/ultimate-plex-stack) and expanded well beyond media — now a full homelab infrastructure with 35+ services.
 
-Welcome to my stack repository! This repository showcases my docker compose setup for managing various media-related services using Docker containers. The compose file is meant to be modified to each user's liking as I know, not everyone has the same requirements.
+A production-ready Docker Compose stack for running a complete homelab. Built around Plex as the media server, but expanded to cover the full spectrum of self-hosting: VPN-routed torrenting via Gluetun, SSO authentication with Authelia, password management with Vaultwarden, DNS-level ad blocking with AdGuard Home, reverse proxy with Traefik, disk health monitoring, push notifications, recipe management, budgeting, and more.
 
-Currently you can choose from the **Basic** or the **Advanced** compose.
+Everything runs behind a single `docker compose up -d` with Traefik routing `*.homelab` domains, AdGuard handling local DNS, and qBittorrent tunneled through a WireGuard VPN. Two compose options are available — **Basic** for a minimal media setup, or **Advanced** for the full stack.
 
 ---
 
