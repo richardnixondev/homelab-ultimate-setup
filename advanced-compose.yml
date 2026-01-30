@@ -40,7 +40,7 @@ services:
     ports:
       - 53:53/tcp
       - 53:53/udp
-      - 3001:3000/tcp  # Admin UI (initial setup)
+      - 3001:80/tcp    # Admin UI
       - 8443:443/tcp   # HTTPS admin
       - 853:853/tcp    # DNS-over-TLS
     volumes:
@@ -570,7 +570,8 @@ services:
       - ${BASE_PATH}/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /mnt/truenas/movies:/mnt/truenas/movies:ro
-      - /mnt/truenas/config:/mnt/truenas/config:ro
+      - /mnt/truenas/backup-appdata:/mnt/truenas/backup-appdata:ro
+      - /mnt/appdata/xxx:/mnt/appdata/xxx:ro
     networks:
       - proxy
     ports:
@@ -637,7 +638,8 @@ services:
       - TZ=${TZ}
     volumes:
       - /opt/docker-configs/whisparr/config:/config
-      - ${MEDIA_SHARE}:/share  # Full share access for hardlinking (downloads + xxx)
+      - ${MEDIA_SHARE}:/share  # Full share access for hardlinking (downloads)
+      - /mnt/appdata/xxx:/share/xxx  # Dedicated xxx share mapped to same internal path
     networks:
       - proxy
     ports:
@@ -668,10 +670,13 @@ services:
       - STASH_CACHE=/cache/
     volumes:
       - /opt/docker-configs/stash/config:/root/.stash
-      - ${DOCKER_PATH}/stash/generated:/generated
-      - ${DOCKER_PATH}/stash/metadata:/metadata
-      - ${DOCKER_PATH}/stash/cache:/cache
-      - ${MEDIA_SHARE}/xxx:/data  # Adult content library
+      - /opt/docker-configs/stash/generated:/generated
+      - /opt/docker-configs/stash/metadata:/metadata
+      - /opt/docker-configs/stash/cache:/cache
+      - /opt/docker-configs/stash/blobs:/blobs
+      - /mnt/appdata/xxx:/data  # Adult content library (dedicated NFS share)
+    devices:
+      - /dev/dri:/dev/dri  # Hardware transcoding (VAAPI)
     networks:
       - proxy
     ports:
@@ -1012,6 +1017,18 @@ services:
       - "traefik.http.routers.backrest.entrypoints=websecure"
       - "traefik.http.routers.backrest.tls=true"
       - "traefik.http.services.backrest.loadbalancer.server.port=9898"
+    restart: unless-stopped
+
+  #Reddit Counter - Counts media files in reddit collection
+  reddit-counter:
+    image: python:3-alpine
+    container_name: reddit-counter
+    command: python /app/serve.py
+    volumes:
+      - /opt/docker-configs/reddit-counter/serve.py:/app/serve.py:ro
+      - /mnt/appdata/xxx:/data:ro
+    ports:
+      - 8086:8080
     restart: unless-stopped
 
   #Actual Budget - Personal finance and budgeting (YNAB alternative)
